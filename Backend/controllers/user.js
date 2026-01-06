@@ -137,10 +137,71 @@ const logOut=asyncfunHnadle(async (req,res,next)=>{
     message:"user logOut success full",
   })
 })
+
+
+
+
+// get user detail 
+const userDetail=asyncfunHnadle(async(req,res,next)=>{
+  const userId=req.user.id;
+  const user=await User.findById(userId);
+  // not user in data  base
+  if(!user){
+    return next(new ErrorHanddleer(400,"user not found"));
+  }
+
+  res.status(200).json({
+    success:true,
+    message:"user detail are",
+    user,
+  })
+
+})
+
+// update password 
+const updatePassword=asyncfunHnadle(async(req,res,next)=>{
+  const userId=req.user.id;
+  const { oldPassword, newPassword, confirmPassword } = req.body;
+
+if (!oldPassword || !newPassword || !confirmPassword) {
+  return next(new ErrorHanddleer(400, "All fields are required"));
+}
+console.log(oldPassword);
+console.log(newPassword);
+
+
+  const user=await User.findById(userId).select("+password");
+  // not user in data  base
+  if(!user){
+    return next(new ErrorHanddleer(400,"user not found"));
+  }
+
+  const passwordMatch=await user.comparePassword(oldPassword);
+    if(!passwordMatch){
+      return next(new ErrorHanddleer(400,"correct old pas email & password"))
+    }
+
+    if(newPassword!==confirmPassword){
+      return next(new ErrorHanddleer(400,"correct not new paasord & password"))
+    }
+
+    user.password=req.body.newPassword;
+    console.log(user);
+    await user.save();
+  res.status(200).json({
+    success:true,
+    message:"user detail are",
+    user,
+  })
+
+})
+
 module.exports={
     registationControoler,
     loginUser,
     logOut,
     forgetPassword,
-    restePassword
+    restePassword,
+    userDetail,
+    updatePassword,
 }
